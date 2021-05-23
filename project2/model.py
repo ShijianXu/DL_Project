@@ -15,7 +15,7 @@ class MLP(Module):
             Linear(25, 25),
             ReLU(),
             Linear(25, 1),
-            Sigmoid()
+            #Sigmoid()
         )
         
         """

@@ -17,7 +17,9 @@ def train(model, train_input, train_target, batch_size, nb_epochs, lr):
     criterion = MSELoss()
     optimizer = SGD(model.parameters(), lr=lr)
 
+    losses = []
     for e in range(nb_epochs):
+        running_loss = 0.0
         for b in range(0, train_input.size(0), batch_size):
             out = model(train_input[b:b+batch_size])
 
@@ -29,8 +31,14 @@ def train(model, train_input, train_target, batch_size, nb_epochs, lr):
             model.backward(dldy)
             optimizer.step()
             
+            running_loss += loss.item()
+
+        epoch_loss = running_loss / (b / batch_size + 1)
+        losses.append(epoch_loss)
         if (e+1) % 10 == 0:
-            print("Epoch {}, batch {}, loss: {} ".format(e, b/batch_size, loss.item()))
+            print("Epoch {}, loss: {} ".format(e, epoch_loss))
+    
+    print(losses)
 
 def test(model, test_input, test_target, batch_size):
     nb_acc = 0

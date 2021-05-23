@@ -1,6 +1,6 @@
 import torch
 
-class SGD():
+class SGD(object):
     def __init__(self, params, lr):
         self.params = params    # a list
         self.lr = lr
