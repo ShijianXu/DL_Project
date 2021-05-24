@@ -126,6 +126,7 @@ def main():
     batch_size = 100
     nb_epochs = 30
     lr = 1e-3
+    #lr = 1e-2       # for sigmoid
 
     weight_share = True
     auxiliary = True

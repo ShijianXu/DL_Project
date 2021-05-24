@@ -1,9 +1,9 @@
 import torch
 import math
-
-from model import MLP
-from optim import SGD
 from loss import MSELoss
+from optim import SGD
+from model import MLP
+import numpy as np
 
 
 def generate_disc_set(nb):
@@ -16,32 +16,27 @@ def generate_disc_set(nb):
 def train(model, train_input, train_target, batch_size, nb_epochs, lr):
     criterion = MSELoss()
     optimizer = SGD(model.parameters(), lr=lr)
-
-    losses = []
     for e in range(nb_epochs):
-        running_loss = 0.0
         for b in range(0, train_input.size(0), batch_size):
-            out = model(train_input[b:b+batch_size])
+            output = model(train_input[b:b+batch_size])
 
             target = train_target[b:b+batch_size].view(-1, 1).float()
-            loss = criterion(out, target)
-
+            loss = criterion(output, target)
+            
             optimizer.zero_grad()
             dldy = criterion.backward()
             model.backward(dldy)
             optimizer.step()
             
-            running_loss += loss.item()
-
-        epoch_loss = running_loss / (b / batch_size + 1)
-        losses.append(epoch_loss)
         if (e+1) % 10 == 0:
-            print("Epoch {}, loss: {} ".format(e, epoch_loss))
-    
+            print("Epoch {}, batch {}, loss: {} ".format(e, b/batch_size, loss.item()))
+
+
 def test(model, test_input, test_target, batch_size):
     nb_acc = 0
     
     for b in range(0, test_input.size(0), batch_size):
+    
         output = model(test_input[b:b+batch_size])
 
         output = output.view(-1)
@@ -51,6 +46,29 @@ def test(model, test_input, test_target, batch_size):
         nb_acc = nb_acc + (target==pred).sum()
     
     return nb_acc/test_input.size(0)
+
+
+def fit(train_input, train_target, test_input, test_target, batch_size, nb_epochs, lr):
+    rounds = 10
+    accs = []
+
+    for i in range(rounds):
+        model = MLP()
+        print("Evaluating for round {}".format(i))
+
+        # TODO Do not use this function, no data shuffle
+        p = torch.randperm(len(train_input))
+        train_input = train_input[p]
+        train_target = train_target[p]
+
+        train(model, train_input, train_target, batch_size, nb_epochs, lr)
+        acc = test(model, test_input, test_target, batch_size)
+        print("Round {} accuracy: {}".format(i, acc))
+        accs.append(acc.item())
+    
+    accs = np.array(accs)
+    print("Accuracy mean: {}, std: {}".format(accs.mean(), accs.std()))
+    
 
 
 def main():
@@ -63,14 +81,11 @@ def main():
     test_input.sub_(mean).div_(std)
 
     batch_size = 100
-    nb_epochs = 300
+    nb_epochs = 200
     lr = 0.1
-
-    model = MLP()
-
-    train(model, train_input, train_target, batch_size, nb_epochs, lr)
-    acc = test(model, test_input, test_target, batch_size)
-    print("Accuracy: ", acc)
+    
+    fit(train_input, train_target, test_input, test_target, \
+        batch_size, nb_epochs, lr)
 
 
 if __name__ == "__main__":

@@ -9,26 +9,14 @@ class MLP(Module):
     def __init__(self):
         self.mlp = Sequential(
             Linear(2, 25),
-            ReLU(),
+            SELU(),
             Linear(25, 25),
-            ReLU(),
+            SELU(),
             Linear(25, 25),
-            ReLU(),
+            SELU(),
             Linear(25, 1),
-            #Sigmoid()
+            Sigmoid()
         )
-        
-        """
-        self.mlp = Sequential(
-            Linear(2, 25),
-            Tanh(),
-            Linear(25, 25),
-            Tanh(),
-            Linear(25, 25),
-            Tanh(),
-            Linear(25, 1)
-        )
-        """
 
     def forward(self, x):
         out = self.mlp(x)

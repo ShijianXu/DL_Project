@@ -15,7 +15,6 @@ class Sequential(Module):
         return out
 
     def backward(self, prev_grad):
-        ##TODO: reverse the order for backprop
         for i in range(self.nb_layers ):
             layer = self.model[self.nb_layers-1-i]
             grad = layer.backward(prev_grad)
